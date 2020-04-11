@@ -1,0 +1,15 @@
+{
+  "name": "justone",
+  "version": "1.0.0",
+  "description": "A bot for playing the card game Just One",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tristan Tisch",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.1.1"
+  }
+}
