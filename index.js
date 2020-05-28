@@ -4,7 +4,7 @@ const bot = new Client();
 
 const token = 'Njk3ODE4NTM0OTA1OTA1MjAy.Xo80Qg.zuio21dthutvBQZPvuPsj-bCOXY';
 
-const PREFIX = '!';
+const PREFIX = '§';
 
 //TODO Make sure that GameState always has all fields!!
 
@@ -44,7 +44,9 @@ const embed = new MessageEmbed().setColor(0xe6dcc1);
 function handleMessage(message) {
 	if(message.channel.type === 'dm') {
 			handleDMCommand(message)
-	} else if (message.content.charAt(0) === PREFIX) {	
+	} else if (message.channel != channel && channel != undefined) {
+			return;
+	}else if (message.content.charAt(0) === PREFIX) {	
 		channel = message.channel;
 		//Split the message into command and args
 		var args = message.content.substring(PREFIX.length).split(' ');
@@ -118,16 +120,16 @@ function startGame() {
 			'round': 0
 		};
 		
-		channel.send(embed.setTitle('Spiel gestartet').setDescription("Neues Spiel gestarted. **!join** um beizutreten, **!play** um zu spielen."));
+		channel.send(embed.setTitle('Spiel gestartet').setDescription("Neues Spiel gestarted. **" + PREFIX + "join** um beizutreten, **" + PREFIX + "play** um zu spielen."));
 	} else {
-		channel.send(embed.setTitle('Spiel läuft noch.').setDescription('Ein Spiel läuft gerade noch. Beende dieses zuerst mit **!stop**, um ein neues Spiel zu starten zu können.'));
+		channel.send(embed.setTitle('Spiel läuft noch.').setDescription('Ein Spiel läuft gerade noch. Beende dieses zuerst mit **' + PREFIX + 'stop**, um ein neues Spiel zu starten zu können.'));
 	}
 }
 
 //Stops a game if one is running
 function stopGame() {
 	if(Game.state === GameState.STOPPED) {
-		channel.send(embed.setTitle('').setDescription("Es läuft momentan kein Spiel. Starte doch eins mit !start."));
+		channel.send(embed.setTitle('').setDescription("Es läuft momentan kein Spiel. Starte doch eins mit **" + PREFIX + "start**."));
 	} else {
 		Game.state = GameState.STOPPED;
 		channel.send(embed.setTitle("Spiel beendet.").setDescription('Tschüss. Bis zum nächten Mal.'));
@@ -145,10 +147,10 @@ function joinGame(user) {
 								'hintGiven': false});
 			const dmChannelPromise = user.createDM();
 			dmChannelPromise.then(ch => {ch.send(embed.setTitle('Wilkommen zu Just One').setDescription(''))});
-			channel.send(embed.setTitle('').setDescription(mentionUser(user.id) + ' ist nun im Spiel!'));
+			channel.send(embed.setTitle('').setDescription(mentionUser(user.id) + ' ist nun im Spiel' + PREFIX + ''));
 		}
 	} else if (Game.state === GameState.STOPPED) {
-		channel.send(embed.setTitle('').setDescription('Es läuft kein Spiel, dem du beitreten kannst. Erstelle eines mit **!start**.'))
+		channel.send(embed.setTitle('').setDescription('Es läuft kein Spiel, dem du beitreten kannst. Erstelle eines mit **' + PREFIX + 'start**.'))
 	}
 }
 
@@ -257,10 +259,10 @@ function handleDuplicates(message) {
 		if(message.content === 'passt') {
 			Game.state = GameState.CHOOSING;
 			for(var i = 0; i < Game.players.length; i++) {
-				Game.players[i].user.dmChannel.send(embed.setTitle('').setDescription('Die Hinweise wurden bestätigt. Geht zu ' + mentionChannel(channel) + '!'));
+				Game.players[i].user.dmChannel.send(embed.setTitle('').setDescription('Die Hinweise wurden bestätigt. Geht zu ' + mentionChannel(channel) + '' + PREFIX + ''));
 			}
 			printHints(channel);
-			channel.send(embed.setTitle('').setDescription(mentionUser(Game.players[Game.activePlayer].user.id) + 'Gib deinen Tipp mit **!guess** ***<Dein Tipp>*** ab? Wenn du die Karte überspringen möchtest, schreibe **!guess skip**'));
+			channel.send(embed.setTitle('').setDescription(mentionUser(Game.players[Game.activePlayer].user.id) + 'Gib deinen Tipp mit **' + PREFIX + 'guess** ***<Dein Tipp>*** ab? Wenn du die Karte überspringen möchtest, schreibe **' + PREFIX + 'guess skip**'));
 			return;
 		}
 		var number = parseInt(message.content);
@@ -278,7 +280,7 @@ function handleDuplicates(message) {
 //Handles Command $guess
 function handleGuess(message, args) {
 	if(Game.state != GameState.CHOOSING) {
-		channel.send(embed.setTitle('Whoops!').setDescription('Der Command ist gerade nicht möglich. Checke **!help**'));
+		channel.send(embed.setTitle('Whoops!').setDescription('Der Command ist gerade nicht möglich. Checke **' + PREFIX + 'help**'));
 		return;
 	}
 
@@ -290,7 +292,7 @@ function handleGuess(message, args) {
 
 	//If there was no guess
 	if(args.length == 1) {
-		channel.send(embed.setTitle('Wo ist dein Tipp?').setDescription('Bitte gebe einen Tipp der Form **!guess** *<Dein Tipp>* ab'));
+		channel.send(embed.setTitle('Wo ist dein Tipp?').setDescription('Bitte gebe einen Tipp der Form **' + PREFIX + 'guess** *<Dein Tipp>* ab'));
 		return;
 	}
 
@@ -311,14 +313,14 @@ function handleGuess(message, args) {
 	}
 
 	channel.send(embed.setTitle('Nope (glaube ich)').setDescription('Argh, die richtige Lösung war leider **' + Game.activeCard + '**.\n' + 
-				'Findet ihr, dass der Tipp trotzdem zählen sollte? Dann schreibt **!solved**, ansonsten **!failed**'));
+				'Findet ihr, dass der Tipp trotzdem zählen sollte? Dann schreibt **' + PREFIX + 'solved**, ansonsten **' + PREFIX + 'failed**'));
 	Game.state = GameState.PENDING;
 }
 
 //Handles Commands $solved and $failed
 function handlePending(solved) {
 	if(Game.state != GameState.PENDING) {
-		channel.send(embed.setTitle('What?').setDescription('Der Command ist gerade nicht möglich. Checke **!help**'));
+		channel.send(embed.setTitle('What?').setDescription('Der Command ist gerade nicht möglich. Checke **' + PREFIX + 'help**'));
 		return;
 	}
 
@@ -351,9 +353,9 @@ function endGame() {
 function printHelpMessage() {
 	//TODO print custom help message based on game state
 	let m = 'Es existieren die folgenden Commands: \n' + 
-			'!start -> Startet ein neues Spiel \n' +
-			'!stop -> Beendet das gerade laufende Spiel \n' +
-			'!help -> Zeigt diese Hilfemitteilung \n' +
+			'' + PREFIX + 'start -> Startet ein neues Spiel \n' +
+			'' + PREFIX + 'stop -> Beendet das gerade laufende Spiel \n' +
+			'' + PREFIX + 'help -> Zeigt diese Hilfemitteilung \n' +
 			'Du befindest dich im channel ' + mentionChannel(channel.id);
 	channel.send(embed.setTitle('Hilfe!!').setDescription(m));
 }
@@ -361,7 +363,7 @@ function printHelpMessage() {
 //Prints that the command was not found
 function printNoCommandFound() {
 	let m = 'Es gibt leider keinen solchen Command :/ \n' + 
-			'Sende !help für alle Commands';
+			'Sende ' + PREFIX + 'help für alle Commands';
 	channel.send(embed.setTitle('').setDescription(m));
 }
 
